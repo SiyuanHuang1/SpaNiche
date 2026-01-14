@@ -4,19 +4,20 @@
 \alias{make_distance_matrix}
 \title{make_distance_matrix}
 \usage{
-make_distance_matrix(
-  spatialdf,
-  dm_type = c("loop1", "loop1+loop2"),
-  distance_thre
-)
+make_distance_matrix(spatialdf, dm_type = c("view1", "view2"), distance_thre)
 }
 \arguments{
-\item{spatialdf}{a data frame or matrix that contains two columns, "col" and "row". The row names represent the barcode of the spot.}
+\item{spatialdf}{a data frame or matrix that contains two columns, "col" and "row". The rownames of this data frame represent the barcode of the spot.}
 
-\item{dm_type}{This parameter can be one or more values from c('loop1', 'loop1+loop2'), representing the type of adjacency matrix to be returned.}
+\item{dm_type}{This parameter can be one or more values from c('view1', 'view2'), representing the type of adjacency matrix to be returned. For example, you can choose c('view1') or c('view1', 'view2')}
 
-\item{distance_thre}{This parameter represents distance, defining the central distance from loop0 to loop1, and/or from loop0 to loop2.}
+\item{distance_thre}{This parameter represents distance, defining the central distance from center to it's first/second-order neighbors. consistent with dm_type, you can define c(c1) or c(c1, c2), c1/c2 is distance value.}
+}
+\value{
+A named list of adjacency matrices corresponding to each dm_type.
+Each matrix is normalized so that rows sum to 1 (row-stochastic matrix).
+Diagonal elements are 0 (no self-connections).
 }
 \description{
-make_distance_matrix
+The function calculates Euclidean distances between spatial spots and converts them into adjacency matrices based on specified distance thresholds.
 }
