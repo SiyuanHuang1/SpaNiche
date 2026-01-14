@@ -6,17 +6,23 @@
 \usage{
 make_distance_matrix_LR(
   spatialdf,
-  dm_type = c("loop1", "loop2"),
-  distance_thre
+  dm_type = c("view1", "view2"),
+  distance_thre,
+  digits = 2
 )
 }
 \arguments{
-\item{spatialdf}{a data frame or matrix that contains two columns, "col" and "row". The row names represent the barcode of the spot.}
+\item{spatialdf}{A data frame or matrix containing spatial coordinates. It must include two columns named \code{col} and \code{row}. Row names should correspond to spot barcodes.}
 
-\item{dm_type}{This parameter can be one or more values from c('loop1', 'loop2'), representing the type of adjacency matrix to be returned.}
+\item{dm_type}{This parameter can be one or more values from c('view1', 'view2'), representing the type of adjacency matrix to be returned.}
 
-\item{distance_thre}{This parameter represents distance, defining the central distance from loop0 to loop1(, and from loop0 to loop2).}
+\item{distance_thre}{A numeric vector specifying distance thresholds. If only \code{"view1"} is requested, a single value is sufficient, defining the distance from center to first-order neighbors (view1). If \code{"view1"} + \code{"view2"} is requested, two values are required, defining the distance from center to first-order neighbors (view1) and from center to second-order neighbors (view2).}
+
+\item{digits}{integer indicating the number of decimal places.}
+}
+\value{
+A named list of row-normalized adjacency matrices.
 }
 \description{
-make_distance_matrix_LR
+This function computes pairwise Euclidean distances between spatial spots and constructs distance-based adjacency matrices designed for ligand-receptor interaction information.
 }
