@@ -7,10 +7,14 @@
 prepare_for_LRintegratedmatrix(seu_obj, ccc_db)
 }
 \arguments{
-\item{seu_obj}{ST data is processed as a Seurat object with 'Spatial' as the assay name. Seurat object is normalized by using the 'NormalizeData' function.}
+\item{seu_obj}{A Seurat object containing spatial transcriptomics data, with 'Spatial' as the assay name. The object should be normalized using the NormalizeData function.}
 
-\item{ccc_db}{This parameter represents the reference for cell-cell interactions, which comes from CellChat.}
+\item{ccc_db}{This parameter represents the reference database of cell-cell interactions, e.g., CellChatDB.human, containing interaction, complex, and geneInfo tables.}
+}
+\value{
+A list with two elements: (1) a gene/complex-by-spot expression matrix, and (2) a filtered CellChat interaction data frame.
 }
 \description{
-prepare_for_LRintegratedmatrix
+This function prepares an integrated expression matrix for ligand–receptor analysis in spatial transcriptomics data.
+It filters CellChat ligand–receptor interactions based on genes present in the Spatial assay of a Seurat object and returns both the integrated expression matrix and the filtered interaction table.
 }
