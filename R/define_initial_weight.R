@@ -1,11 +1,14 @@
-#' define_initial_weight
+#' define_initial_weight: define initial weights for a list of matrices
 #'
-#' @param data.list data.list
+#' @description
+#' This function computes an initial weight for each matrix in a list
+#' based on its Frobenius norm and matrix size. The weights are designed
+#' to balance the contribution of matrices with different scales and
+#' dimensions in downstream joint or multi-modal analyses.
+#' @param data.list A list of numeric matrices.
 #'
-#' @return
-#' @export
-#'
-#' @examples
+#' @return A numeric vector of weights, with length equal to length(data.list).
+#' @keywords internal
 define_initial_weight = function(data.list){
 
   mean_matrix_norm_v = c()

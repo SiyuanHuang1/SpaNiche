@@ -2,8 +2,6 @@
 
 export(DEinteractions_twoclusters)
 export(calculate_laplacian_matrix_with_gausskernel)
-export(define_good_weight)
-export(define_initial_weight)
 export(distribution_2d)
 export(generate_LRintegratedmatrix)
 export(get_spot_by_celltype_extended)

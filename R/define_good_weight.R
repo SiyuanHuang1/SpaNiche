@@ -1,15 +1,16 @@
-#' define_good_weight
+#' define_good_weight: define adaptive weights based on reconstruction error
 #'
-#' @param X X
+#' @description
+#' This function computes an adaptive weight for each matrix based on
+#' its reconstruction error under a given matrix factorization.
+#' @param X A list of numeric matrices. Each matrix represents an observed data matrix to be factorized.
 #' @param Wzero Wzero
 #' @param Hzero Hzero
-#' @param theta_v theta_v
-#' @param weight_input weight_input
+#' @param theta_v A numeric vector of initial weights for each matrix.
+#' @param weight_input A numeric vector specifying the target or prior weights for each matrix.
 #'
-#' @return
-#' @export
-#'
-#' @examples
+#' @return A numeric vector of adaptive weights, with length equal to length(X).
+#' @keywords internal
 define_good_weight = function(X,Wzero,Hzero,theta_v,weight_input){
 
   rho_v = c()

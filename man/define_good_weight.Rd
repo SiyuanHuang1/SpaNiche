@@ -2,21 +2,26 @@
 % Please edit documentation in R/define_good_weight.R
 \name{define_good_weight}
 \alias{define_good_weight}
-\title{define_good_weight}
+\title{define_good_weight: define adaptive weights based on reconstruction error}
 \usage{
 define_good_weight(X, Wzero, Hzero, theta_v, weight_input)
 }
 \arguments{
-\item{X}{X}
+\item{X}{A list of numeric matrices. Each matrix represents an observed data matrix to be factorized.}
 
 \item{Wzero}{Wzero}
 
 \item{Hzero}{Hzero}
 
-\item{theta_v}{theta_v}
+\item{theta_v}{A numeric vector of initial weights for each matrix.}
 
-\item{weight_input}{weight_input}
+\item{weight_input}{A numeric vector specifying the target or prior weights for each matrix.}
+}
+\value{
+A numeric vector of adaptive weights, with length equal to length(X).
 }
 \description{
-define_good_weight
+This function computes an adaptive weight for each matrix based on
+its reconstruction error under a given matrix factorization.
 }
+\keyword{internal}

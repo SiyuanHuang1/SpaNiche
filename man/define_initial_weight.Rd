@@ -2,13 +2,20 @@
 % Please edit documentation in R/define_initial_weight.R
 \name{define_initial_weight}
 \alias{define_initial_weight}
-\title{define_initial_weight}
+\title{define_initial_weight: define initial weights for a list of matrices}
 \usage{
 define_initial_weight(data.list)
 }
 \arguments{
-\item{data.list}{data.list}
+\item{data.list}{A list of numeric matrices.}
+}
+\value{
+A numeric vector of weights, with length equal to length(data.list).
 }
 \description{
-define_initial_weight
+This function computes an initial weight for each matrix in a list
+based on its Frobenius norm and matrix size. The weights are designed
+to balance the contribution of matrices with different scales and
+dimensions in downstream joint or multi-modal analyses.
 }
+\keyword{internal}
