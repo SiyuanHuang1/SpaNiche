@@ -2,15 +2,22 @@
 % Please edit documentation in R/calculate_laplacian_matrix_with_gausskernel.R
 \name{calculate_laplacian_matrix_with_gausskernel}
 \alias{calculate_laplacian_matrix_with_gausskernel}
-\title{calculate_laplacian_matrix_with_gausskernel}
+\title{Calculate graph Laplacian matrix using a Gaussian kernel}
 \usage{
 calculate_laplacian_matrix_with_gausskernel(spa_mat, sigma = 1)
 }
 \arguments{
-\item{spa_mat}{spa_mat}
+\item{spa_mat}{A numeric matrix of spatial coordinates. Rows correspond to observations (e.g. cells or spots), and columns correspond to spatial dimensions.}
 
-\item{sigma}{sigma}
+\item{sigma}{A positive numeric value specifying the bandwidth of the Gaussian kernel. Larger values lead to smoother, more global connectivity.}
+}
+\value{
+A list with the following components:
+Graph Laplacian matrix;
+Degree matrix;
+Gaussian kernel-based adjacency matrix.
 }
 \description{
-calculate_laplacian_matrix_with_gausskernel
+This function constructs a weighted adjacency matrix from spatial
+coordinates using a Gaussian kernel, and then computes the graph Laplacian matrix.
 }
