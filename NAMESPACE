@@ -2,7 +2,6 @@
 
 export(DEinteractions_twoclusters)
 export(distribution_2d)
-export(generate_LRintegratedmatrix)
 export(get_spot_by_celltype_extended)
 export(make_distance_matrix)
 export(moransi_for_LRintegratedmatrix)

@@ -3,7 +3,7 @@
 \docType{data}
 \name{CellChatDB.human}
 \alias{CellChatDB.human}
-\title{Ligand-receptor interactions in CellChat database for human}
+\title{Ligand–receptor interaction database for human (CellChat)}
 \format{
 A list includes the ligand-receptor interactions
 }
@@ -14,6 +14,6 @@ A list includes the ligand-receptor interactions
 CellChatDB.human
 }
 \description{
-The ligand-receptor interaction database curated in CellChat tool
+A curated database of human ligand–receptor interactions used by the CellChat package to infer and analyze cell–cell communication networks from single-cell transcriptomic data.
 }
 \keyword{datasets}

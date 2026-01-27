@@ -2,24 +2,47 @@
 % Please edit documentation in R/generate_LRintegratedmatrix.R
 \name{generate_LRintegratedmatrix}
 \alias{generate_LRintegratedmatrix}
-\title{generate_LRintegratedmatrix}
+\title{generate an integrated ligand-receptor interaction matrix}
 \usage{
 generate_LRintegratedmatrix(
-  neighbor_matrix,
-  neighbor_role,
-  center_role,
+  whoisneighbor,
+  neighbor_geneexp,
+  center_geneexp,
   center_is_ligand
 )
 }
 \arguments{
-\item{neighbor_matrix}{A matrix representing the relationship between neighboring spatial locations.}
+\item{whoisneighbor}{A square numeric matrix indicating spatial neighborhood relationships.
+Rows and columns correspond to spatial spots (barcodes), where non-zero
+values indicate neighboring relationships. The row and column names must be
+identical and ordered consistently with the gene expression matrices.}
 
-\item{neighbor_role}{A matrix (spot by gene).}
+\item{neighbor_geneexp}{A matrix with rows representing spatial spots and columns representing genes.}
 
-\item{center_role}{A matrix (spot by gene).}
+\item{center_geneexp}{A matrix with rows representing spatial spots and columns representing genes.}
 
-\item{center_is_ligand}{A logical variable indicating if the central role represents a ligand. If TRUE, the central role is a ligand; if FALSE, it is a receptor.}
+\item{center_is_ligand}{A logical value specifying the signaling role of the center spots.
+\itemize{
+\item \code{TRUE}: center spots are treated as ligand-expressing cells,
+and neighboring spots as receptor-expressing cells.
+\item \code{FALSE}: center spots are treated as receptor-expressing cells,
+and neighboring spots as ligand-expressing cells.
+}}
+}
+\value{
+A numeric matrix with rows representing micro-regions (defined by a center spot
+and its neighbors) and columns representing ligand–receptor gene pairs.
+Each entry corresponds to the element-wise product of mean neighbor gene
+expression and center spot gene expression for a given ligand–receptor pair.
 }
 \description{
-generate_LRintegratedmatrix
+For each spatial view (e.g., view1 and view2), this function is executed twice
+to capture bidirectional ligand–receptor signaling between center spots and
+their neighboring spots.
+Specifically, center spots and neighbor spots can alternately act as signal
+senders and receivers:
+\itemize{
+\item If the center spot expresses ligands, neighboring spots express receptors.
+\item Conversely, if the center spot expresses receptors, neighboring spots express ligands.
+}
 }

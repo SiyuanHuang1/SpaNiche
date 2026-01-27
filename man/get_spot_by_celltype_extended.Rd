@@ -7,19 +7,42 @@
 get_spot_by_celltype_extended(
   spatialdf,
   spot_by_celltype,
-  smoothing_type = c("loop0", "loop1", "loop1+loop2"),
-  distance_thre
+  smoothing_type = c("view0", "view1", "view2"),
+  distance_thre = c(NA, round(2/(3^0.5), 2), round(4/(3^0.5), 2))
 )
 }
 \arguments{
-\item{spatialdf}{a data frame or matrix that contains two columns, "col" and "row". The row names represent the barcode of the spot.}
+\item{spatialdf}{A data frame or matrix with two columns: \code{col} and
+\code{row}, representing spatial coordinates of spots. Row names must be
+spot barcodes and consistent with \code{spot_by_celltype}.}
 
-\item{spot_by_celltype}{a data frame or matrix representing the abundance of cell types, with spots as rows and cell types as columns. Its row names should be consistent with the row names of 'spatialdf'.}
+\item{spot_by_celltype}{A numeric matrix or data frame with spots as rows
+and cell types as columns, representing cell type abundance or proportion.
+Row names must match those of \code{spatialdf}.}
 
-\item{smoothing_type}{This parameter has three options: c('loop0'), c('loop0', 'loop1'), and c('loop0', 'loop1', 'loop1+loop2'). 'loop0', 'loop1', and 'loop1+loop2' indicate the range within which data smoothing is performed, denoting: no smoothing, smoothing using one adjacent spot, and smoothing using two surrounding spots, respectively. As it involves the merging of matrices, the returned matrix's dimension varies depending on the chosen option. The dimensions corresponding to the three options are 1x, 2x, and 3x of the original dimensions, respectively.}
+\item{smoothing_type}{Character vector specifying the spatial smoothing
+levels to include. Supported values are:
+\itemize{
+\item \code{"view0"}: no smoothing (original matrix)
+\item \code{"view1"}: first-order spatial neighbors
+\item \code{"view2"}: second-order spatial neighbors
+}
+Valid combinations are \code{c("view0")},
+\code{c("view0","view1")}, and
+\code{c("view0","view1","view2")}.}
 
-\item{distance_thre}{This parameter represents distance, defining the central distance from loop0 to loop1, and from loop0 to loop2. The length of the vector is consistent with the smoothing_type parameter. For example, distance_thre = c(NA,round(2/(3^0.5),2),round(4/(3^0.5),2))}
+\item{distance_thre}{This parameter represents distance, defining the central distance from center to loop1 (view1), and from center to loop2 (view2). For view0, the distance is ignored and should be set to NA. The length of the vector is consistent with the smoothing_type parameter. For example, A typical choice for Visium data is: distance_thre = c(NA,round(2/(3^0.5),2),round(4/(3^0.5),2)).}
+}
+\value{
+A numeric matrix with the same number of rows (spots) as the input.
+Columns correspond to concatenated cell type features from different
+spatial views. Column names are suffixed with \code{_view1} or
+\code{_view2} when applicable.
 }
 \description{
-get_spot_by_celltype_extended
+Perform multi-scale spatial smoothing of spot-level cell type abundance
+for 10x Visium spatial transcriptomics data. Depending on the selected
+smoothing range (view0 / view1 / view2), the function aggregates cell type
+information from spatial neighbors and concatenates results into an
+extended feature matrix.
 }
