@@ -2,17 +2,30 @@
 % Please edit documentation in R/moransi_for_LRintegratedmatrix.R
 \name{moransi_for_LRintegratedmatrix}
 \alias{moransi_for_LRintegratedmatrix}
-\title{moransi_for_LRintegratedmatrix}
+\title{Calculate Moran's I for spatial ligand-receptor integrated matrix}
 \usage{
 moransi_for_LRintegratedmatrix(LRintegratedmatrix, spatial.seu, cc_interaction)
 }
 \arguments{
-\item{LRintegratedmatrix}{integrated LR matrix, where the row names represent features and the column names represent spots. The underscore ('_') in the row names will be replaced by a hyphen ('-').}
+\item{LRintegratedmatrix}{A numeric matrix of integrated LR interaction
+scores. Rows correspond to LR interactions and columns correspond to
+spatial spots. Row names represent interaction identifiers.
+Underscores ('_') in row names will be replaced by hyphens ('-') to ensure
+consistency with Seurat's feature naming conventions.}
 
-\item{spatial.seu}{spatial.seu}
+\item{spatial.seu}{A Seurat object containing spatial transcriptomics data.
+This object must include spatial image information (e.g. Visium) and
+spot coordinates. Column names of LRintegratedmatrix must match
+the spot names in this object.}
 
-\item{cc_interaction}{cc_interaction}
+\item{cc_interaction}{A data frame containing ligand–receptor interaction
+annotations.}
+}
+\value{
+A data frame containing Moran's I statistics for spatially variable
+ligand–receptor interactions, merged with ligand–receptor annotation
+information. The output is sorted by decreasing observed Moran's I.
 }
 \description{
-moransi_for_LRintegratedmatrix
+Calculate Moran's I for spatial ligand-receptor integrated matrix
 }

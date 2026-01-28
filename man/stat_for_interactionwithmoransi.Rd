@@ -2,7 +2,7 @@
 % Please edit documentation in R/stat_for_interactionwithmoransi.R
 \name{stat_for_interactionwithmoransi}
 \alias{stat_for_interactionwithmoransi}
-\title{stat_for_interactionwithmoransi}
+\title{stat_for_interactionwithmoransi: Summarize and visualize spatially significant ligand–receptor interactions}
 \usage{
 stat_for_interactionwithmoransi(
   moransi_df,
@@ -20,6 +20,19 @@ stat_for_interactionwithmoransi(
 
 \item{height_ratio}{Ratio to define the relative heights of the two plots when they are combined.}
 }
+\value{
+A \code{patchwork} object consisting of two vertically stacked bar plots:
+\enumerate{
+\item A bar plot showing the number of spatially significant LR interactions
+per pathway.
+\item A bar plot showing the number of spatially significant LR interactions
+per annotation category.
+}
+The function also produces a CSV file as a side effect.
+}
 \description{
-stat_for_interactionwithmoransi
+This function filters ligand–receptor (LR) interactions based on
+Moran's I statistics and visualizes the distribution of spatially
+significant interactions across functional pathways and annotation
+categories.
 }

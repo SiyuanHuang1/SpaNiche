@@ -1,16 +1,29 @@
-#' stat_for_interactionwithmoransi
+#' stat_for_interactionwithmoransi: Summarize and visualize spatially significant ligand–receptor interactions
 #'
+#' @description
+#' This function filters ligand–receptor (LR) interactions based on
+#' Moran's I statistics and visualizes the distribution of spatially
+#' significant interactions across functional pathways and annotation
+#' categories.
 #' @param moransi_df A data frame expected to contain columns such as MoransI_observed, MoransI_p.value, pathway_name, and annotation.
 #' @param moransi_thre Threshold for the Moran's I value to filter the interactions.
 #' @param p.value_thre Threshold for the p-value to filter the interactions.
 #' @param height_ratio Ratio to define the relative heights of the two plots when they are combined.
 #'
 #' @return
+#' A \code{patchwork} object consisting of two vertically stacked bar plots:
+#' \enumerate{
+#'   \item A bar plot showing the number of spatially significant LR interactions
+#'   per pathway.
+#'   \item A bar plot showing the number of spatially significant LR interactions
+#'   per annotation category.
+#' }
+#' The function also produces a CSV file as a side effect.
+#'
 #' @import tidyverse
 #' @import patchwork
 #' @export
-#'
-#' @examples
+
 stat_for_interactionwithmoransi = function(
     moransi_df,
     moransi_thre = 0.2,
