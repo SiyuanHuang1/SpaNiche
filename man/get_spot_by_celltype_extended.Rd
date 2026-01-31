@@ -8,7 +8,8 @@ get_spot_by_celltype_extended(
   spatialdf,
   spot_by_celltype,
   smoothing_type = c("view0", "view1", "view2"),
-  distance_thre = c(NA, round(2/(3^0.5), 2), round(4/(3^0.5), 2))
+  distance_thre = c(NA, 2/(3^0.5), 4/(3^0.5)),
+  digits = 2
 )
 }
 \arguments{
@@ -32,6 +33,8 @@ Valid combinations are \code{c("view0")},
 \code{c("view0","view1","view2")}.}
 
 \item{distance_thre}{This parameter represents distance, defining the central distance from center to loop1 (view1), and from center to loop2 (view2). For view0, the distance is ignored and should be set to NA. The length of the vector is consistent with the smoothing_type parameter. For example, A typical choice for Visium data is: distance_thre = c(NA,round(2/(3^0.5),2),round(4/(3^0.5),2)).}
+
+\item{digits}{integer indicating the number of decimal places.}
 }
 \value{
 A numeric matrix with the same number of rows (spots) as the input.

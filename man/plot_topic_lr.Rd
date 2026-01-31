@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_topic_lr.R
 \name{plot_topic_lr}
 \alias{plot_topic_lr}
-\title{plot_topic_lr}
+\title{Plot topic-specific ligand–receptor (LR) interaction heatmap}
 \usage{
 plot_topic_lr(
   topic_lr,
@@ -16,9 +16,13 @@ plot_topic_lr(
 )
 }
 \arguments{
-\item{topic_lr}{A dataframe (LR by topic) representing the relationship between topics and LR.}
+\item{topic_lr}{A numeric data frame or matrix with LR interactions as rows
+and topics as columns. Row names must correspond to LR interaction names.}
 
-\item{topic_lr_quantile_thre}{A threshold for quantile selection. Only data above this quantile will be considered for visualization. Default is 0.95.}
+\item{topic_lr_quantile_thre}{A numeric value between 0 and 1 specifying the
+global quantile threshold used to filter LR values across all topics.
+Only LR–topic pairs with values above this quantile will be considered.
+Default is \code{0.95}.}
 
 \item{top_num_plot}{The maximum number of LR interactions to be displayed for each topic in the plot. Default is 10.}
 
@@ -32,6 +36,13 @@ plot_topic_lr(
 
 \item{strip.text.y.size}{The font size for the text on the y-axis strip. Default is 12.}
 }
+\value{
+A \code{ggplot2} object representing a faceted heatmap of topic-specific LR interactions.
+}
 \description{
-plot_topic_lr
+This function visualizes topic-specific ligand–receptor (LR) interactions
+as a heatmap. For each topic, LR values are first normalized to
+relative contributions, then filtered by a global quantile threshold.
+The top LR interactions for each topic are selected and displayed
+in separate facets.
 }

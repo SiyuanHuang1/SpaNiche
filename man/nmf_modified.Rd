@@ -2,7 +2,7 @@
 % Please edit documentation in R/nmf_modified.R
 \name{nmf_modified}
 \alias{nmf_modified}
-\title{nmf_modified}
+\title{nmf_modified: Core function for spatially regularized integrative non-negative matrix factorization of multi-modal data}
 \usage{
 nmf_modified(
   dat = dat,
@@ -14,12 +14,14 @@ nmf_modified(
   sigma = 0.5,
   maxiter = 50,
   st.count = 20,
-  spatial.mat = as.matrix(spatialdf[, c("row", "col")]),
+  spatialdf = as.matrix(spatialdf[, c("row", "col")]),
   epsilon = 1e-04
 )
 }
 \arguments{
-\item{dat}{A list of data matrices to be factorized. Each matrix represents a distinct dataset.}
+\item{dat}{A list of non-negative data matrices to be factorized.
+Each matrix represents one data modality and must have the same number
+of spots.}
 
 \item{Wzero}{Initial weight matrix (W). Typically used as a starting point for the factorization process. Its dimensions are determined by the data matrices and the specified number of components/topics (k).}
 
@@ -29,7 +31,7 @@ nmf_modified(
 
 \item{k}{An integer specifying the number of components or topics to be extracted. It determines the number of columns in the W matrix and the number of rows in each H matrix.}
 
-\item{lambda}{lambda}
+\item{lambda}{lambda controls the strength of the spatial smoothness regularization.}
 
 \item{sigma}{Gaussian kernel parameter. Used in the computation of the Laplacian matrix, influencing how spatial information is incorporated into the factorization.}
 
@@ -37,10 +39,22 @@ nmf_modified(
 
 \item{st.count}{Convergence counter. If the change in the reconstruction error remains below epsilon for st.count consecutive iterations, the algorithm stops, assuming it has converged.}
 
-\item{spatial.mat}{A matrix containing spatial information}
+\item{spatialdf}{A matrix containing spatial information.}
 
-\item{epsilon}{A threshold for the change in reconstruction error. If the relative change in error is less than epsilon for st.count consecutive iterations, convergence is assumed.}
+\item{epsilon}{Threshold on the relative change in the objective function used to assess convergence. If the relative change in error is less than epsilon for st.count consecutive iterations, convergence is assumed.}
+}
+\value{
+A list containing:
+\itemize{
+\item \code{W}: The optimized shared basis matrix.
+\item \code{H}: A list of optimized modality-specific coefficient matrices.
+\item \code{convergence}: A data frame recording convergence diagnostics
+across iterations.
+\item \code{min.f.WH}: Objective function values for all parameter
+combinations.
+\item \code{clusters}: Cluster assignments derived from \code{W}
+using maximum component loading.
 }
 \description{
-nmf_modified
+nmf_modified: Core function for spatially regularized integrative non-negative matrix factorization of multi-modal data
 }
