@@ -23,6 +23,7 @@
 #'   \code{c("view0","view1")}, and
 #'   \code{c("view0","view1","view2")}.
 #' @param distance_thre This parameter represents distance, defining the central distance from center to loop1 (view1), and from center to loop2 (view2). For view0, the distance is ignored and should be set to NA. The length of the vector is consistent with the smoothing_type parameter. For example, A typical choice for Visium data is: distance_thre = c(NA,round(2/(3^0.5),2),round(4/(3^0.5),2)).
+#' @param digits integer indicating the number of decimal places.
 #'
 #' @return
 #' A numeric matrix with the same number of rows (spots) as the input.
@@ -35,8 +36,11 @@ get_spot_by_celltype_extended=function(
     spatialdf,
     spot_by_celltype,
     smoothing_type = c('view0', 'view1', 'view2'),
-    distance_thre = c(NA,round(2/(3^0.5),2),round(4/(3^0.5),2))
+    distance_thre = c(NA,2/(3^0.5),4/(3^0.5)),
+    digits = 2
 ){
+  distance_thre = round(distance_thre,digits)
+
   if (!all(smoothing_type %in% c("view0","view1","view2"))) {
     stop("smoothing_type must be a subset of c('view0','view1','view2').")
   }
@@ -51,7 +55,12 @@ get_spot_by_celltype_extended=function(
 
   if (identical(smoothing_type,c('view0', 'view1', 'view2'))) {
     #Make a distance matrix
-    distance_matrix = make_distance_matrix(spatialdf = spatialdf,dm_type = setdiff(smoothing_type,"view0"),distance_thre = distance_thre[-1],digits = 2)
+    distance_matrix = make_distance_matrix(
+      spatialdf = spatialdf,
+      dm_type = setdiff(smoothing_type,"view0"),
+      distance_thre = distance_thre[-1],
+      digits = digits
+      )
 
     dst1 = distance_matrix[[smoothing_type[2]]]
     dst2 = distance_matrix[[smoothing_type[3]]]
@@ -72,7 +81,12 @@ get_spot_by_celltype_extended=function(
 
   if (identical(smoothing_type,c('view0', 'view1'))) {
     #Make a distance matrix
-    distance_matrix = make_distance_matrix(spatialdf = spatialdf,dm_type = setdiff(smoothing_type,"view0"),distance_thre = distance_thre[-1],digits = 2)
+    distance_matrix = make_distance_matrix(
+      spatialdf = spatialdf,
+      dm_type = setdiff(smoothing_type,"view0"),
+      distance_thre = distance_thre[-1],
+      digits = digits
+      )
 
     dst1 = distance_matrix[[smoothing_type[2]]]
     spot_by_celltype.dst1=dst1 %*% spot_by_celltype

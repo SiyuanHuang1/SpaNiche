@@ -1,21 +1,29 @@
-#' nmf_modified
+#' nmf_modified: Core function for spatially regularized integrative non-negative matrix factorization of multi-modal data
 #'
-#' @param dat A list of data matrices to be factorized. Each matrix represents a distinct dataset.
+#' @param dat A list of non-negative data matrices to be factorized.
+#'   Each matrix represents one data modality and must have the same number
+#'   of spots.
 #' @param Wzero Initial weight matrix (W). Typically used as a starting point for the factorization process. Its dimensions are determined by the data matrices and the specified number of components/topics (k).
 #' @param Hzero Initial list of H matrices. Each matrix in this list corresponds to a data matrix in dat. These matrices are also used as starting points for the factorization process.
 #' @param wt A weight vector. It assigns weights to the individual data matrices in dat, indicating the importance or priority of each dataset in the factorization process.
 #' @param k An integer specifying the number of components or topics to be extracted. It determines the number of columns in the W matrix and the number of rows in each H matrix.
-#' @param lambda lambda
+#' @param lambda lambda controls the strength of the spatial smoothness regularization.
 #' @param sigma Gaussian kernel parameter. Used in the computation of the Laplacian matrix, influencing how spatial information is incorporated into the factorization.
 #' @param maxiter The maximum number of iterations allowed for the factorization process. This acts as a stopping criterion to prevent the algorithm from running indefinitely.
 #' @param st.count Convergence counter. If the change in the reconstruction error remains below epsilon for st.count consecutive iterations, the algorithm stops, assuming it has converged.
-#' @param spatial.mat A matrix containing spatial information
-#' @param epsilon A threshold for the change in reconstruction error. If the relative change in error is less than epsilon for st.count consecutive iterations, convergence is assumed.
+#' @param spatialdf A matrix containing spatial information.
+#' @param epsilon Threshold on the relative change in the objective function used to assess convergence. If the relative change in error is less than epsilon for st.count consecutive iterations, convergence is assumed.
 #'
-#' @return
-#' @export
-#'
-#' @examples
+#' @return A list containing:
+#'   \itemize{
+#'     \item \code{W}: The optimized shared basis matrix.
+#'     \item \code{H}: A list of optimized modality-specific coefficient matrices.
+#'     \item \code{convergence}: A data frame recording convergence diagnostics
+#'       across iterations.
+#'     \item \code{min.f.WH}: Objective function values for all parameter
+#'       combinations.
+#'     \item \code{clusters}: Cluster assignments derived from \code{W}
+#'       using maximum component loading.
 nmf_modified = function(
   dat = dat,
   Wzero = fit$W,
@@ -26,24 +34,26 @@ nmf_modified = function(
   sigma = 0.5,
   maxiter = 50,
   st.count = 20,
-  spatial.mat = as.matrix(spatialdf[,c("row","col")]),
-  epsilon = 1e-04 #对loss的限制，百分比可能好一点，比起具体的值
-  #seed在这个过程中需要设置吗？
+  spatialdf = as.matrix(spatialdf[,c("row","col")]),
+  epsilon = 1e-04
   ){
-  # I would like to express my gratitude to TJJ and CZH,
+  # I would like to express my gratitude to TJJ and CZH
   # for their invaluable assistance in completing the core part of this code.
   # I consulted with them on numerous mathematical issues
   # and am deeply appreciative of their insights and explanations.
-  # Additionally, I would like to extend my thanks to the R package IntNMF,
+  # Additionally, I would like to thank the R package IntNMF,
   # as our preliminary concepts were inspired by it.
 
 
-  # 一些基本的变量
+  #2024.07
+  #Should a random seed be set during this process?
+
+  # Basic variables
   n = nrow(Wzero)
   n.dat = length(Hzero)
   if (n.dat != length(wt)) stop("Number of weights must match number of data")
 
-  # 因为涉及到很多lambda和sigma，所以是一个list
+  # Since multiple values of lambda and sigma are explored, results are stored as lists.
   min.f.WH <- NULL
   W.list = NULL
   for (i in 1:n.dat) {assign(paste("H",i,".list",sep = ""),NULL)}
@@ -57,8 +67,9 @@ nmf_modified = function(
       W=Wzero
       H=Hzero
 
+      # Compute adjacency, degree, and Laplacian matrices using a Gaussian kernel based on spatial coordinates
       laplacian_res = calculate_laplacian_matrix_with_gausskernel(
-        spa_mat = spatial.mat,sigma = sigmai
+        spa_mat = spatialdf,sigma = sigmai
       )
       laplacian_matrix = laplacian_res$laplacian
       degree_matrix = laplacian_res$degree
@@ -149,17 +160,17 @@ nmf_modified = function(
 
         if (!is.na(difference_level) & difference_level < epsilon) {count <- count + 1} else {count <- 0}
 
-        #保存一些指标
+        #Store convergence-related metrics
         convergence <- rbind(convergence,c(iter,count,ifelse(!is.na(difference_level) & difference_level < epsilon,1,0),difference_level,abs.diff,f.WH))
         iter <- iter + 1
-      } #while循环结束
+      } # End of while loop
 
       colnames(convergence) <- c("iter","count","stability","difference_level","abs.diff","f.WH")
       convergence = as.data.frame(convergence)
       convergence$lambda = lambdai
       convergence$sigma = sigmai
 
-      # make list of all W,H, convergence
+      # Store all candidate W, H, and convergence results
       min.f.WH <- c(min.f.WH,f.WH)
       W.list <- c(W.list,list(W))
       for (i in 1:n.dat) {
@@ -172,7 +183,7 @@ nmf_modified = function(
       convergence.list <- c(convergence.list,list(convergence))
 
     }
-  } #lambda和sigma循环完了
+  } # End of lambda and sigma loops
   H.list <- NULL
   for (i in 1:n.dat) H.list <- c(H.list,list(eval(parse(text=paste("H",i,".list",sep="")))))
   names(H.list) <- paste("H",1:n.dat,".list",sep="")

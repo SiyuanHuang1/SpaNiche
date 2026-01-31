@@ -1,118 +1,151 @@
-#' spatme_main
+#' spaniche_nmf_comm: Spatial integrative NMF of cell-type abundance
+#' and ligand–receptor interaction matrices, with downstream pathway inference
 #'
-#' @param vis.seu ST data is processed as a Seurat object with 'Spatial' as the assay name. Seurat object is normalized by using the 'NormalizeData' function.
-#' @param spatialdf a data frame or matrix that contains two columns, "col" and "row". The row names represent the barcode of the spot.
-#' @param enrichmentdf a data frame or matrix representing the abundance of cell types, with spots as rows and cell types as columns. Its row names should be consistent with the row names of 'spatialdf'.
-#' @param smoothing_type This parameter has three options: c('loop0'), c('loop0', 'loop1'), and c('loop0', 'loop1', 'loop1+loop2'). 'loop0', 'loop1', and 'loop1+loop2' indicate the range within which data smoothing is performed, denoting: no smoothing, smoothing using one adjacent spot, and smoothing using two surrounding spots, respectively. As it involves the merging of matrices, the returned matrix's dimension varies depending on the chosen option. The dimensions corresponding to the three options are 1x, 2x, and 3x of the original dimensions, respectively.
-#' @param distance_thre This parameter represents distance, defining the central distance from loop0 to loop1, and from loop0 to loop2. The length of the vector is consistent with the smoothing_type parameter. For example, distance_thre = c(NA,round(2/(3^0.5),2),round(4/(3^0.5),2))
+#' @param spatial.seu ST data is processed as a Seurat object with 'Spatial' as the assay name. Seurat object is normalized by using the 'NormalizeData' function. The order of spots must be consistent with spatialdf.
+#' @param spatialdf a data frame or matrix that contains two columns, "col" and "row". Row names must be
+#'   spot barcodes and consistent with \code{spot_by_celltype}.
+#' @param spot_by_celltype a data frame or matrix representing the abundance of cell types, with spots as rows and cell types as columns. Its row names should be consistent with the row names of 'spatialdf'.
+#' @param smoothing_type Character vector specifying the spatial smoothing
+#'   levels to include. Supported values are:
+#'   \itemize{
+#'     \item \code{"view0"}: no smoothing (original matrix)
+#'     \item \code{"view1"}: first-order spatial neighbors
+#'     \item \code{"view2"}: second-order spatial neighbors
+#'   }
+#'   Valid combinations are \code{c("view0")},
+#'   \code{c("view0","view1")}, and
+#'   \code{c("view0","view1","view2")}.
+#'   As it involves the merging of matrices, the returned matrix's dimension varies depending on the chosen option. The dimensions corresponding to the three options are 1x, 2x, and 3x of the original dimensions, respectively.
+#' @param distance_thre This parameter represents distance, defining the central distance from center to loop1 (view1), and from center to loop2 (view2). For view0, the distance is ignored and should be set to NA. The length of the vector is consistent with the smoothing_type parameter. For example, A typical choice for Visium data is: distance_thre = c(NA,round(2/(3^0.5),2),round(4/(3^0.5),2)).
+#' @param digits integer indicating the number of decimal places.
 #' @param LRDB This parameter represents the reference for cell-cell interactions, which comes from CellChat.
-#' @param LR_dm_type This parameter can be one or more values from c('loop1', 'loop2'), representing the type of adjacency matrix to be returned.
-#' @param LR_distance_thre This parameter represents distance, defining the central distance from loop0 to loop1(, and from loop0 to loop2).
+#' @param LR_dm_type This parameter can be one or more values from c('view1', 'view2'), representing the type of adjacency matrix to be returned.
+#' @param LR_distance_thre A numeric vector specifying distance thresholds. If only \code{"view1"} is requested, a single value is sufficient, defining the distance from center to first-order neighbors (view1). If \code{"view1"} + \code{"view2"} is requested, two values are required, defining the distance from center to first-order neighbors (view1) and from center to second-order neighbors (view2).
 #' @param var_thre Variance threshold
 #' @param topic_num An integer specifying the number of components or topics to be extracted. It determines the number of columns in the W matrix and the number of rows in each H matrix.
-#' @param defined_weight defined_weight
-#' @param lambda_v lambda
+#' @param defined_weight Either \code{"default"} to use data-driven modality
+#'   weights, or a numeric vector of length two specifying user-defined weights
+#'   for the cell-type and LR matrices.
+#' @param lambda_v Vector of spatial regularization parameters controlling the
+#'   strength of Laplacian smoothness.
 #' @param sigma_v Gaussian kernel parameter. Used in the computation of the Laplacian matrix, influencing how spatial information is incorporated into the factorization.
 #' @param maxiter The maximum number of iterations allowed for the factorization process. This acts as a stopping criterion to prevent the algorithm from running indefinitely.
 #' @param st.count Convergence counter. If the change in the reconstruction error remains below epsilon for st.count consecutive iterations, the algorithm stops, assuming it has converged.
-#' @param epsilon A threshold for the change in reconstruction error. If the relative change in error is less than epsilon for st.count consecutive iterations, convergence is assumed.
+#' @param epsilon Threshold on the relative change in the objective function used to assess convergence. If the relative change in error is less than epsilon for st.count consecutive iterations, convergence is assumed.
 #' @param topic_lr_quantile_thre A threshold for quantile selection. Only data above this quantile will be considered for visualization. Default is 0.95.
-#' @param spot_topic.quantile.thre spot_topic.quantile.thre
+#' @param spot_topic.quantile.thre Quantile threshold defining topic-high and
+#'   topic-low spot groups (default: top and bottom 20 %).
 #' @param S_intra_thre S_intra_thre
-#' @param term_topn term_topn
-#' @param num_core Number of core to be used during parallel computation. only be used when running scSeqComm analyze
+#' @param term_topn Number of top enriched functional terms retained for visualization.
+#' @param num_core Number of CPU cores used for parallel computation in downstream scSeqComm analysis.
 #'
-#' @return
+#' @return A list containing:
+#'   \itemize{
+#'     \item \code{LRintegratedmatrix}: Filtered spatial LR interaction matrix.
+#'     \item \code{nmf_res}: Results from spatially regularized integrative NMF.
+#'     \item \code{go_res}: GO enrichment results for topic-specific signaling.
+#'     \item \code{go_plot}: Visualization of enriched functional pathways.
+#'   }
 #' @import Seurat
 #' @import tidyverse
 #' @import IntNMF
 #' @import scales
 #' @import scSeqComm
 #' @export
-#'
-#' @examples
-spatme_main = function(
-    ## 基本输入
-  vis.seu,
+spaniche_nmf_comm = function(
+    ## Basic inputs
+  spatial.seu,
   spatialdf,
-  enrichmentdf,
-  smoothing_type = c("loop0", "loop1", "loop1+loop2"),
-  distance_thre = c(NA,round(2/(3^0.5),2),round(4/(3^0.5),2)),
-  ## LR相关参数
-  LRDB = spatme::CellChatDB.human,
-  LR_dm_type = c("loop1", "loop2"), #暂时不能更改
-  LR_distance_thre = c(round(2/(3^0.5),2),round(4/(3^0.5),2)),
+  spot_by_celltype,
+  smoothing_type = c('view0', 'view1', 'view2'),
+  distance_thre = c(NA,2/(3^0.5),4/(3^0.5)),
+  digits = 2,
+  ## Parameters related to ligand–receptor interactions
+  LRDB = SpaNiche::CellChatDB.human,
+  LR_dm_type = c("view1", "view2"),
+  LR_distance_thre = c(2/(3^0.5),4/(3^0.5)),
   var_thre = c(0.2,0.99),
-  ## 联合分解相关的参数
+  ## Parameters related to joint matrix factorization
   topic_num = 15,
-  defined_weight = "default", #defined_weight == "default"默认取值；defined_weight = c(0.7,0.3)
+  defined_weight = "default",
   lambda_v =c(0.5, 1, 2),
   sigma_v = c(0.5, 1, 1.5),
   maxiter = 200,
   st.count = 20,
   epsilon = 1e-04,
-  ## 下游的细胞响应
+  # Downstream cellular responses
   topic_lr_quantile_thre = 0.95,
   spot_topic.quantile.thre = 0.2,
   S_intra_thre = 0.8,
   term_topn = 20,
   num_core = 1
 ){
-  #调整顺序
-  if(identical(rownames(spatialdf),rownames(enrichmentdf))){
-    print("The spot order is consistent between spatialdf and enrichmentdf.")
+  distance_thre = round(distance_thre,digits)
+  LR_distance_thre = round(LR_distance_thre,digits)
+
+
+  # Ensure consistent spot ordering
+  if(identical(rownames(spatialdf),colnames(spatial.seu))){
+    print("The spot order is consistent between spatialdf and spatial.seu.")
   } else {
-    enrichmentdf=enrichmentdf[rownames(spatialdf),]
-    print("The spot order between spatialdf and enrichmentdf is inconsistent. Adjust the spot order of enrichmentdf.")
+    spatialdf = spatialdf[colnames(spatial.seu),]
+    print("The spot order between spatialdf and spatial.seu is inconsistent. Adjust the spot order of spatialdf.")
   }
 
-  #拓展矩阵
+  if(identical(rownames(spatialdf),rownames(spot_by_celltype))){
+    print("The spot order is consistent between spatialdf and spot_by_celltype.")
+  } else {
+    spot_by_celltype=spot_by_celltype[rownames(spatialdf),]
+    print("The spot order between spatialdf and spot_by_celltype is inconsistent. Adjust the spot order of spot_by_celltype.")
+  }
+
+  # Construct spatially extended cell-type enrichment matrix
   spot.ct.df = get_spot_by_celltype_extended(
     spatialdf = spatialdf,
-    spot_by_celltype = enrichmentdf,
+    spot_by_celltype = spot_by_celltype,
     smoothing_type = smoothing_type,
-    distance_thre = distance_thre
+    distance_thre = distance_thre,
+    digits = digits
   )
   write.csv(spot.ct.df,file = "spot_by_celltype_extended.csv",quote = F,row.names = T)
 
-  ### 第二部分 ###################################################################
-  step1_res=prepare_for_LRintegratedmatrix(vis.seu,LRDB)
-  distance_matrix = make_distance_matrix_LR(spatialdf = spatialdf,dm_type = LR_dm_type,distance_thre = LR_distance_thre)
+  ### Part II: Construction of ligand–receptor integrated matrix
+  step1_res=prepare_for_LRintegratedmatrix(spatial.seu,LRDB)
+  distance_matrix = make_distance_matrix_LR(spatialdf = spatialdf,dm_type = LR_dm_type,distance_thre = LR_distance_thre,digits = digits)
   LRelementmatrix = step1_res[[1]]
   cc_interaction = step1_res[[2]]
 
-  # 单个spot中，R的表达量
+  # Receptor expression within each spot
   rmat = LRelementmatrix %>% t() %>% .[,cc_interaction$receptor]
-  # 单个spot中，L的表达量
+  # Ligand expression within each spot
   lmat = LRelementmatrix %>% t() %>% .[,cc_interaction$ligand]
-  # 后续为了扩大适用性，下面要改，不一定是m1到m4
-  m1=generate_LRintegratedmatrix(neighbor_matrix = distance_matrix$loop1,neighbor_role = rmat,center_role = lmat,center_is_ligand = T)
-  m2=generate_LRintegratedmatrix(neighbor_matrix = distance_matrix$loop1,neighbor_role = lmat,center_role = rmat,center_is_ligand = F)
-  colnames(m1)=paste0(colnames(m1)," (loop0+loop1)")
-  colnames(m2)=paste0(colnames(m2)," (loop0+loop1)")
+  # NOTE: This section may be generalized in the future; currently assumes four LR configurations (m1–m4).
+  m1=generate_LRintegratedmatrix(whoisneighbor = distance_matrix$view1,neighbor_geneexp = rmat,center_geneexp = lmat,center_is_ligand = T)
+  m2=generate_LRintegratedmatrix(whoisneighbor = distance_matrix$view1,neighbor_geneexp = lmat,center_geneexp = rmat,center_is_ligand = F)
+  colnames(m1)=paste0(colnames(m1)," (view1)")
+  colnames(m2)=paste0(colnames(m2)," (view1)")
 
-  m3=generate_LRintegratedmatrix(neighbor_matrix = distance_matrix$loop2,neighbor_role = rmat,center_role = lmat,center_is_ligand = T)
-  m4=generate_LRintegratedmatrix(neighbor_matrix = distance_matrix$loop2,neighbor_role = lmat,center_role = rmat,center_is_ligand = F)
-  colnames(m3)=paste0(colnames(m3)," (loop0+loop2)")
-  colnames(m4)=paste0(colnames(m4)," (loop0+loop2)")
+  m3=generate_LRintegratedmatrix(whoisneighbor = distance_matrix$view2,neighbor_geneexp = rmat,center_geneexp = lmat,center_is_ligand = T)
+  m4=generate_LRintegratedmatrix(whoisneighbor = distance_matrix$view2,neighbor_geneexp = lmat,center_geneexp = rmat,center_is_ligand = F)
+  colnames(m3)=paste0(colnames(m3)," (view2)")
+  colnames(m4)=paste0(colnames(m4)," (view2)")
 
   LRintegratedmatrix=m1 %>% cbind(m2) %>% cbind(m3) %>% cbind(m4)
   LRintegratedmatrix[is.na(LRintegratedmatrix)] = 0
   saveRDS(LRintegratedmatrix,file = "LRintegratedmatrix.rds")
   rm(list = paste0("m",1:4))
 
-  ### 计算莫兰指数，然后添加interaction信息 ###
-  moransi_output_df = moransi_for_LRintegratedmatrix(t(LRintegratedmatrix),vis.seu,cc_interaction)
+  ### Compute Moran's I and annotate ligand–receptor interactions ###
+  moransi_output_df = moransi_for_LRintegratedmatrix(t(LRintegratedmatrix),spatial.seu,cc_interaction)
   saveRDS(moransi_output_df,file = "LRintegratedmatrix_with_moransi.rds")
-
   print("Moran's index calculation completed")
 
-  ### 第三部分 ###################################################################
+  ### Part III: Joint factorization of cell-type and LR interaction matrices
   LRintegratedmatrix = LRintegratedmatrix[,colSums(LRintegratedmatrix) > 0]
   colnames(LRintegratedmatrix)=colnames(LRintegratedmatrix) %>% str_replace_all("_","-")
   LRintegratedmatrix=LRintegratedmatrix[spot.ct.df %>% rownames(),]
 
-  # 方差情况
+  # Variance-based filtering of LR interactions
   var.df1 = LRintegratedmatrix %>% apply(2, function(x){var(x)}) %>% as.data.frame()
   colnames(var.df1) = "var_value"
   var.df1$interaction = rownames(var.df1)
@@ -124,18 +157,17 @@ spatme_main = function(
   used_interaction = var.df1$interaction
   used_interaction = intersect(colnames(LRintegratedmatrix),used_interaction)
   LRintegratedmatrix=LRintegratedmatrix[,used_interaction]
-
   print("Filtering the LR integrated matrix based on variance and selecting some LR pairs.")
 
-  #转成matrix
+  # to matrix
   spot.ct.df = as.matrix(spot.ct.df)
   LRintegratedmatrix = as.matrix(LRintegratedmatrix)
-  # 如何在第一次跑IntNMF之前，估计较好的权重
+  # Estimate initial modality weights prior to running IntNMF
   dat <- list(spot.ct.df,LRintegratedmatrix)
   theta_v = define_initial_weight(dat)
   # The function nmf.mnnals requires the samples to be on rows and variables on columns.
   fit <- nmf.mnnals(dat=dat,k=topic_num,maxiter=50,st.count=10,n.ini=3,ini.nndsvd=TRUE,seed=TRUE,wt = theta_v)
-  # 如何确定更严谨的权重
+  # Determine refined modality weights
   if (length(defined_weight) == 2 & all(defined_weight > 0)) {
     rho_v = define_good_weight(X = dat,Wzero = fit$W,Hzero = fit$H,theta_v = theta_v,weight_input = defined_weight)
   } else if (length(defined_weight) == 1 & defined_weight == "default") {
@@ -143,10 +175,9 @@ spatme_main = function(
   } else {
     stop("defined_weight error")
   }
-
   print("Weights for different matrices have been determined, now starting joint factorization of the two matrices:")
 
-  # 联合分解
+  # Joint matrix factorization
   myfit = nmf_modified(
     dat = dat,
     Wzero = fit$W,
@@ -161,16 +192,14 @@ spatme_main = function(
     epsilon = epsilon
   )
   saveRDS(myfit,file = "nmf_modified_fit.rds")
-
   print("joint factorization has been completed.")
 
-  ### 第五部分 ###################################################################
-  # 联系下游细胞响应
+  ### Part IV: Linking latent topics to downstream cellular responses
   spot_topic = as.data.frame(myfit$W)
   colnames(spot_topic) = paste0("topic",1:topic_num)
   allSB = rownames(spot_topic)
 
-  gene_expr_matrix = vis.seu@assays$Spatial@data
+  gene_expr_matrix = spatial.seu@assays$Spatial@data
   gene_expr_matrix = as.matrix(gene_expr_matrix)
   gene_expr_matrix = gene_expr_matrix[rowSums(gene_expr_matrix) > 0,]
 
@@ -181,11 +210,11 @@ spatme_main = function(
   topic_lr_small_file = dir(getwd(),"topic_lr_small_.*csv")
   topic_lr_small = read.csv(topic_lr_small_file)
 
-  # 配色
+  # Color palette for topic visualization
   color_cluster = hue_pal()(topic_num)
   names(color_cluster) = paste0("topic",1:topic_num)
 
-  # 需要导出
+  # Objects to be exported
   plot.list=list()
   all.go = data.frame()
 
@@ -241,7 +270,7 @@ spatme_main = function(
                                        DEmethod = "wilcoxon")
 
 
-    ### （受配体对形成后，）后续的细胞响应
+    ### Downstream cellular responses induced by ligand–receptor interactions
     topic_high_comm = dplyr::filter(scSeqComm_res$comm_results,cluster == paste(ti,"high",sep = "_") & S_intra >= S_intra_thre)
     if (dim(topic_high_comm)[1] < 2) {next} #20231018
 
@@ -252,7 +281,7 @@ spatme_main = function(
       geneUniverse = geneUniverse,
       method = "general")
 
-    # 画图
+    # plot
     cell_functional_response$pval = as.numeric(cell_functional_response$pval)
     cell_functional_response = cell_functional_response %>% arrange(pval)
     cell_functional_response$pval_log10_neg = -log10(cell_functional_response$pval)
