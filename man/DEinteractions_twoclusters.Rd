@@ -2,7 +2,7 @@
 % Please edit documentation in R/DEinteractions_twoclusters.R
 \name{DEinteractions_twoclusters}
 \alias{DEinteractions_twoclusters}
-\title{DEinteractions_twoclusters}
+\title{Identify Differential Interactions Between Two Topic-Based Clusters}
 \usage{
 DEinteractions_twoclusters(
   spot_topic,
@@ -22,7 +22,7 @@ DEinteractions_twoclusters(
 
 \item{thre.var}{Variance threshold used to filter interactions.}
 
-\item{thre.topic}{Topic threshold used to distinguish between the higher and lower clusters.}
+\item{thre.topic}{Topic score threshold used to distinguish between the higher and lower clusters.}
 
 \item{thre.p.adj}{Adjusted p-value threshold. Interactions with an adjusted p-value below this threshold are considered significant.}
 
@@ -32,6 +32,15 @@ DEinteractions_twoclusters(
 
 \item{thre.pct.2}{Threshold for the proportion of spots in the "low" cluster that have non-zero interaction values.}
 }
+\value{
+A list with two elements:
+\describe{
+\item{all.topic.df}{A data frame containing differential statistics for
+all interactions across all topics.}
+\item{all.topic.df.f}{A filtered data frame of significant, topic-specific
+interactions based on the specified thresholds.}
+}
+}
 \description{
-DEinteractions_twoclusters
+Identify Differential Interactions Between Two Topic-Based Clusters
 }
