@@ -14,8 +14,6 @@
 #' @import tidyverse
 #' @importFrom raster pointDistance
 #' @export
-#'
-#' @examples
 make_distance_matrix = function(
     spatialdf,
     dm_type = c("view1", "view2"),

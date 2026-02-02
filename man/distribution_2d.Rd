@@ -2,7 +2,7 @@
 % Please edit documentation in R/distribution_2d.R
 \name{distribution_2d}
 \alias{distribution_2d}
-\title{distribution_2d}
+\title{Visualize the 2D spatial distribution of a single feature}
 \usage{
 distribution_2d(
   feature_matrix,
@@ -19,31 +19,56 @@ distribution_2d(
 )
 }
 \arguments{
-\item{feature_matrix}{A matrix representing features, which could be topics, interactions, or gene expressions. The matrix should have features as its rows and samples/observations as its columns.}
+\item{feature_matrix}{A numeric matrix with features as rows and
+samples/spots/cells as columns. Row names must contain \code{one_feature},
+and column names must match the \code{SB} column in \code{coordinate}.}
 
-\item{one_feature}{A single feature name from the feature_matrix that the user wants to visualize.}
+\item{one_feature}{A character string specifying the name of a single feature
+(row name of \code{feature_matrix}) to visualize.}
 
-\item{coordinate}{A data frame or matrix ideally sourced from a Seurat object. It should contain three columns: "row", "col", and "SB".}
+\item{coordinate}{A data frame or matrix containing spatial coordinates.
+It must include three columns:
+\itemize{
+\item \code{SB}: sample/spot/cell identifier
+\item \code{row}: y-axis spatial coordinate
+\item \code{col}: x-axis spatial coordinate
+}}
 
-\item{thre_to_zero}{A threshold value used to truncate low expression values.}
+\item{thre_to_zero}{A numeric value between 0 and 1 indicating the quantile
+threshold below which expression values will be set to zero. This can be
+used to suppress low-level background noise. Values outside [0, 1) will
+result in an error.}
 
-\item{color_palette}{A character vector specifying the color scheme for visualization. The default colors are light grey and blue. If given a single value, it should be one of the following: "viridis", "magma", "cividis", "inferno", "plasma". If given two values, they specify the gradient colors for low and high expression values, respectively.}
+\item{color_palette}{A character vector specifying the color scale.
+If a single value is provided, it must be one of \code{"viridis"},
+\code{"magma"}, \code{"inferno"}, \code{"plasma"}, or \code{"cividis"}.
+If two values are provided, they will be used as the low and high colors
+for a continuous gradient.}
 
-\item{visualization_type}{A character string indicating the type of visualization. The default is "point", but "density" can also be chosen to visualize data density.}
+\item{visualization_type}{Character string specifying the visualization type.
+Either \code{"point"} (default) for raw point visualization or
+\code{"density"} for weighted kernel density estimation using the
+\pkg{Nebulosa} framework.}
 
-\item{pt.size}{A numeric value determining the size of the points in the plot.}
+\item{pt.size}{Numeric value controlling the size of points.}
 
-\item{axis.title.size}{A numeric value determining the font size of the axis titles.}
+\item{axis.title.size}{Numeric value controlling the font size of axis titles.}
 
-\item{axis.text.size}{A numeric value determining the font size of the axis text.}
+\item{axis.text.size}{Numeric value controlling the font size of axis tick labels.}
 
-\item{plot.title.size}{A numeric value determining the font size of the plot's title.}
+\item{plot.title.size}{Numeric value controlling the font size of the plot title.}
 
-\item{raster}{A boolean value indicating whether to rasterize the output plot. This can be useful for plots with a large number of points to improve rendering performance. By default, it's set to FALSE.}
+\item{raster}{Logical value indicating whether to rasterize the plot using
+\pkg{ggrastr}. This is recommended for datasets with a large number of points. By default, it's set to FALSE.}
 }
 \value{
-a ggplot2 object
+A \code{ggplot2} object representing the spatial distribution of the
+selected feature.
 }
 \description{
-distribution_2d
+This function visualizes the spatial distribution of a single feature
+(e.g., gene expression, topic score, or interaction strength) on a 2D
+coordinate system, typically derived from spatial transcriptomics or
+imaging-based data. Both point-based and density-based (Nebulosa-style)
+visualizations are supported.
 }

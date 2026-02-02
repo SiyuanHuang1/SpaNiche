@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_NMF_components.R
 \name{plot_NMF_components}
 \alias{plot_NMF_components}
-\title{plot_NMF_components}
+\title{Visualize NMF component contributions by cell type and view}
 \usage{
 plot_NMF_components(
   components,
@@ -12,11 +12,14 @@ plot_NMF_components(
   p1.strip.text.x.size = 15,
   p2.strip.text.x.size = 9,
   color_celltype = NULL,
-  color_loop = NULL
+  color_view = NULL
 )
 }
 \arguments{
-\item{components}{A dataframe containing the NMF component data.}
+\item{components}{A numeric data frame or matrix containing NMF component
+loadings. Rows correspond to topics and must have row names (e.g.,
+\code{topic1}, \code{topic2}). Columns correspond to cell type and view
+combinations, formatted as \code{celltype_viewX}.}
 
 \item{one_topic}{A string that specifies which topic to visualize. Default is "topic1".}
 
@@ -28,13 +31,17 @@ plot_NMF_components(
 
 \item{p2.strip.text.x.size}{p2.strip.text.x.size}
 
-\item{color_celltype}{Either NULL or a vector of colors. If provided, it specifies the colors to use for the different cell types in the plot. If NULL, default ggplot2 colors are used.}
+\item{color_celltype}{Either NULL or a named vector of colors. If provided, it specifies the colors to use for the different cell types in the plot. If NULL, default ggplot2 colors are used.}
 
-\item{color_loop}{Either NULL or a vector of colors. If provided, it specifies the colors to use for the different loops in the plot. If NULL, default ggplot2 colors are used.}
+\item{color_view}{Either NULL or a named vector of colors. If provided, it specifies the colors to use for the different views in the plot. If NULL, default ggplot2 colors are used.}
 }
 \value{
-A combined ggplot2 plot that visualizes the values of the specified topic grouped by celltype and loop.
+A combined ggplot2 plot that visualizes the values of the specified topic grouped by celltype and view.
 }
 \description{
-plot_NMF_components
+This function visualizes the contribution of a single NMF topic across
+different cell types and views. Two complementary bar plots are generated: one showing
+topic contributions across cell types within each view, and another
+showing contributions across views within each cell type. The two plots
+are combined vertically using \pkg{patchwork}.
 }
