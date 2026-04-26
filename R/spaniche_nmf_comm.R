@@ -271,7 +271,11 @@ spaniche_nmf_comm = function(
 
 
     ### Downstream cellular responses induced by ligand–receptor interactions
-    topic_high_comm = dplyr::filter(scSeqComm_res$comm_results,cluster == paste(ti,"high",sep = "_") & S_intra >= S_intra_thre)
+    topic_high_comm = dplyr::filter(
+      scSeqComm_res$comm_results,
+      cluster == paste(ti,"high",sep = "_") & S_intra >= S_intra_thre
+      )
+    topic_high_comm = as.data.frame(topic_high_comm) #20260426
     if (dim(topic_high_comm)[1] < 2) {next} #20231018
 
     # GO analysis of topic_high communication
@@ -319,8 +323,8 @@ spaniche_nmf_comm = function(
   output = list(
     LRintegratedmatrix=LRintegratedmatrix,
     nmf_res=myfit,
-    go_res=all.go,
-    go_plot=plot.list
+    go_res=all.go, #p值有过滤
+    go_plot=plot.list #p值没有过滤，只画了前term_topn个
   )
 
   print("Output all results.")
