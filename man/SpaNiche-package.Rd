@@ -4,12 +4,12 @@
 \name{SpaNiche-package}
 \alias{SpaNiche}
 \alias{SpaNiche-package}
-\title{SpaNiche: What the Package Does (One Line, Title Case)}
+\title{SpaNiche: Spatial Niche Analysis}
 \description{
-What the package does (one paragraph).
+Provides tools for spatial niche analysis to explore colocalization patterns and cellular interactions in spatial transcriptomics data.
 }
 \author{
-\strong{Maintainer}: Siyuan Huang \email{huangsiyuan1001@163.com} (\href{https://orcid.org/YOUR-ORCID-ID}{ORCID})
+\strong{Maintainer}: Siyuan Huang \email{huangsiyuan1001@163.com}
 
 }
 \keyword{internal}
