@@ -150,7 +150,7 @@ spaniche_nmf_celltype_and_gene = function(
     sigma = sigma_v,
     maxiter = maxiter,
     st.count = st.count,
-    spatial.mat = as.matrix(spatialdf[,c("row","col")]),
+    spatialdf = as.matrix(spatialdf[,c("row","col")]),
     epsilon = epsilon
   )
   saveRDS(myfit,file = "nmf_modified_fit.rds")
