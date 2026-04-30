@@ -48,9 +48,10 @@ plot_NMF_components = function(
 
   ### modify
   components$view = str_extract(components$celltype_view,"view[0-2].*$")
-  if (any(is.na(components$view))) {
-    stop("Failed to parse view from column names. Expect format: celltype_viewX")
-  }
+  # if (any(is.na(components$view))) {
+  #   stop("Failed to parse view from column names. Expect format: celltype_viewX")
+  # }
+  components$view[is.na(components$view)] = "view0"
   components$celltype=str_replace(components$celltype_view,"_view[0-2].*$","")
 
   each=components%>%dplyr::filter(topic == one_topic)
