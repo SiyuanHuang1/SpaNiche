@@ -95,8 +95,8 @@ A list containing:
 \itemize{
 \item \code{LRintegratedmatrix}: Filtered spatial LR interaction matrix.
 \item \code{nmf_res}: Results from spatially regularized integrative NMF.
-\item \code{go_res}: GO enrichment results for topic-specific signaling.
-\item \code{go_plot}: Visualization of enriched functional pathways.
+\item \code{go_res}: GO enrichment results for topic-specific signaling. Only terms with a p-value < 0.01 are retained.
+\item \code{go_plot}: Visualization of enriched functional pathways. No p-value filtering is applied; the top "term_topn" terms are plotted.
 }
 }
 \description{

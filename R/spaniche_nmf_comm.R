@@ -43,8 +43,8 @@
 #'   \itemize{
 #'     \item \code{LRintegratedmatrix}: Filtered spatial LR interaction matrix.
 #'     \item \code{nmf_res}: Results from spatially regularized integrative NMF.
-#'     \item \code{go_res}: GO enrichment results for topic-specific signaling.
-#'     \item \code{go_plot}: Visualization of enriched functional pathways.
+#'     \item \code{go_res}: GO enrichment results for topic-specific signaling. Only terms with a p-value < 0.01 are retained.
+#'     \item \code{go_plot}: Visualization of enriched functional pathways. No p-value filtering is applied; the top "term_topn" terms are plotted.
 #'   }
 #' @import Seurat
 #' @import tidyverse
@@ -323,8 +323,8 @@ spaniche_nmf_comm = function(
   output = list(
     LRintegratedmatrix=LRintegratedmatrix,
     nmf_res=myfit,
-    go_res=all.go, #p值有过滤
-    go_plot=plot.list #p值没有过滤，只画了前term_topn个
+    go_res=all.go, # p-values filtered with threshold pval < 0.01
+    go_plot=plot.list # no p-value filtering, only the top "term_topn" terms are plotted
   )
 
   print("Output all results.")
