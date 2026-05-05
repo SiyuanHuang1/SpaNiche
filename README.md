@@ -40,3 +40,13 @@ it often yields better correspondence between patterns and interactions.
 Moreover, the workflow is more streamlined compared to two-step
 approaches (e.g., spatial clustering followed by CellphoneDB/cellchat
 analysis).
+
+## Citation
+
+If you have used SpaNiche or referenced some concepts from our paper
+(such as topic, niche, ecotype, colocalization, etc.), please cite our
+paper:
+
+Huang, S., Ran, Q., Tang, J., Wang, X., Xi, J., Ma, S., & Xi, R. (2026).
+SpaNiche: spatial niche analysis to explore colocalization patterns and
+cellular interactions in spatial transcriptomics data. Genome Biology.
